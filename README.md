@@ -1,4 +1,5 @@
 # enum_properties
+[![Documentation](https://docs.rs/enum_properties/badge.svg)](https://docs.rs/enum_properties/)
 
 A macro for declaring static properties on enum variants.
 
