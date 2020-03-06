@@ -1,9 +1,9 @@
 #![no_std]
 #![warn(missing_docs)]
 
-//! A macro with two main uses:
+//! A macro with two main reasons to use:
 //! - attaching static properties to `enum` variants
-//! - using `enum` variants as "pointers" to static records
+//! - reducing the size of pointers to static records
 //! 
 //! The advantage in both cases is that the `enum` itself contains no data, and
 //! can be as small as a byte.
