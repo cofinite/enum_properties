@@ -1,0 +1,15 @@
+[package]
+name = "enum_properties"
+version = "0.1.0"
+description = "A macro for declaring static properties on enum variants"
+authors = ["cofinite"]
+edition = "2018"
+license = "Apache-2.0"
+repository = "https://github.com/cofinite/enum_properties"
+readme = "README.md"
+keywords = ["enum", "macro", "static"]
+categories = ["no-std", "rust-patterns"]
+
+[badges]
+maintenance = { status = "actively-developed" }
+
