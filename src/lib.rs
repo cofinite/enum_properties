@@ -1,7 +1,7 @@
 #![no_std]
 #![warn(missing_docs)]
 
-//! A macro with two main reasons to use:
+//! A macro with two main purposes:
 //! - attaching static properties to `enum` variants
 //! - reducing the size of pointers to static records
 //! 
