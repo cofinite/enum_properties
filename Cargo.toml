@@ -1,6 +1,6 @@
 [package]
 name = "enum_properties"
-version = "0.2.0"
+version = "0.2.1"
 description = "A macro for declaring static properties on enum variants"
 authors = ["cofinite"]
 edition = "2018"
