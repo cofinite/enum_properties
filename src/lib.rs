@@ -57,27 +57,50 @@
 //! ```
 //! 
 
-/// Defines a new `enum` and implements `Deref` for it.
+/// Defines a new `enum` and implements [`Deref`] for it.
 /// 
-/// # Syntax
-/// ```ignore
+/// The `enum` will [`Deref`] to a variant-specific [`static` item].
+/// 
+/// To specify default properties, use the following syntax (inspired by 
+/// [functional update syntax]): 
+/// 
+/// # Example
+/// ```rust
+/// use enum_properties::enum_properties;
+/// 
+/// pub struct EnemyProperties {
+///     pub health:     i32,
+///     pub is_solid:   bool,
+///     pub is_flying:  bool,
+/// }
+/// 
+/// const DEFAULT_ENEMY_PROPERTIES: EnemyProperties = EnemyProperties {
+///     health:     10,
+///     is_solid:   true,
+///     is_flying:  false,
+/// };
+/// 
 /// enum_properties! {
-///     [attributes]
-///     [pub] enum MyEnum: MyProperties {
-///         Variant1 {
-///             field1: value1,
-///             field2: value2,
-///             ...
+///     #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+///     pub enum EnemyKind: EnemyProperties {
+///         Skeleton {
+///             health: 15,
 ///         },
-///         Variant2 {
-///             ...
+///         Ghost {
+///             is_solid: false,
+///             is_flying: true,
 ///         },
-///         ...
+///         Bat {
+///             health: 1,
+///             is_flying: true,
+///         },
+///         ..DEFAULT_ENEMY_PROPERTIES
 ///     }
 /// }
 /// ```
-/// `MyEnum` will `Deref` to a variant-specific static `MyProperties`, as 
-/// defined in the macro invocation.
+/// [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
+/// [`static` item]: https://doc.rust-lang.org/reference/items/static-items.html
+/// [functional update syntax]: https://doc.rust-lang.org/reference/expressions/struct-expr.html#functional-update-syntax
 /// 
 #[macro_export]
 macro_rules! enum_properties {
@@ -85,7 +108,7 @@ macro_rules! enum_properties {
         $(#[$($m:tt)*])*
         $public:vis enum $Enum:ident : $EnumProperties:ident {
             $($variant:ident {
-                $($field:ident : $value:expr),* $(,)?
+                $($field:ident : $value:expr),* $(, .. $default:expr)? $(,)?
             }),* $(,)?
         }
     ) => {
@@ -99,11 +122,36 @@ macro_rules! enum_properties {
             fn deref(&self) -> &Self::Target {
                 match self {
                     $($Enum::$variant => &$EnumProperties {
-                        $($field: $value),*
+                        $($field: $value),* $(, .. $default)?
                     }),*
                 }
             }
         }
-    }
+    };
+    
+    (
+        $(#[$($m:tt)*])*
+        $public:vis enum $Enum:ident : $EnumProperties:ident {
+            $($variant:ident {
+                $($field:ident : $value:expr),* $(,)?
+            }),* , .. $default:expr $(,)?
+        }
+    ) => {
+        $(#[$($m)*])*
+        $public enum $Enum {
+            $($variant),*
+        }
+        
+        impl core::ops::Deref for $Enum {
+            type Target = $EnumProperties;
+            fn deref(&self) -> &Self::Target {
+                match self {
+                    $($Enum::$variant => &$EnumProperties {
+                        $($field: $value),* , .. $default
+                    }),*
+                }
+            }
+        }
+    };
 }
 
