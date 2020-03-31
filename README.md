@@ -9,9 +9,9 @@ A macro for declaring static properties on enum variants. See the [documentation
 use enum_properties::enum_properties;
 
 struct SolidProperties {
-    verts: u32,
-    edges: u32,
-    faces: u32,
+    verts: i32,
+    edges: i32,
+    faces: i32,
 }
 
 enum_properties! {
@@ -45,7 +45,7 @@ enum_properties! {
     }
 }
 
-fn main {
+fn main() {
     let cube = PlatonicSolid::Cube;
     assert_eq!(cube.verts - cube.edges + cube.faces, 2);
 }
