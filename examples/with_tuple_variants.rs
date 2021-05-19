@@ -13,27 +13,39 @@ enum_properties! {
             name: "apple",
             description: "Keeps the doctor away.",
             weight: 0.1,
-        } (u8),
+        } (usize),
         Orange {
             name: "orange",
             description: "Round and refreshing.",
             weight: 0.13,
-        } (f32),
+        } (usize),
         Banana {
             name: "banana",
             description: "Elongated and yellow.",
             weight: 0.12,
-        } (&'static str),
+        } (f32),
     }
 }
 
 fn main() {
-    println!(
-        "An {} weighs about {} kg.",
-        Fruit::Apple(1).name,
-        Fruit::Apple(1).weight
-    );
-    let _ = Fruit::Apple(1);
-    let _ = Fruit::Orange(12.0);
-    let _ = Fruit::Banana("Tasty!");
+    let fruits = [
+        Fruit::Apple(0),
+        Fruit::Orange(10),
+        Fruit::Banana(18.0),
+    ];
+    
+    for &fruit in &fruits {
+        print!("{}s weigh about {} kg, ", fruit.name, fruit.weight);
+        match fruit {
+            Fruit::Apple(worm_count) => {
+                println!("this one has {} worms.", worm_count);
+            }
+            Fruit::Orange(segment_count) => {
+                println!("this one is made of {} segments.", segment_count);
+            }
+            Fruit::Banana(length) => {
+                println!("this one is {} cm long.", length);
+            }
+        }
+    }
 }
