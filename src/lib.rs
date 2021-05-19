@@ -10,6 +10,8 @@
 //!
 //! # Example
 //!
+//! (More complex enums are also supported. See [`enum_properties`#examples] for details.)
+//!
 //! ```rust
 //! use enum_properties::enum_properties;
 //!
@@ -64,7 +66,8 @@
 /// To specify default properties, use the following syntax (inspired by
 /// [functional update syntax]):
 ///
-/// # Example
+/// # Examples
+///
 /// ```rust
 /// use enum_properties::enum_properties;
 ///
@@ -102,6 +105,48 @@
 /// [`static` item]: https://doc.rust-lang.org/reference/items/static-items.html
 /// [functional update syntax]: https://doc.rust-lang.org/reference/expressions/struct-expr.html#functional-update-syntax
 ///
+/// Non-unit variants and custom discriminants are supported too, by inserting the static initializer directly after the variant name:
+///
+/// ```rust
+/// use enum_properties::enum_properties;
+///
+/// pub struct EnemyProperties {
+///     pub base_health:     i32,
+///     pub is_solid:   bool,
+///     pub is_flying:  bool,
+/// }
+///
+/// const DEFAULT_ENEMY_PROPERTIES: EnemyProperties = EnemyProperties {
+///     base_health:     10,
+///     is_solid:   true,
+///     is_flying:  false,
+/// };
+///
+/// enum_properties! {
+///     #[derive(Clone, Copy, PartialEq, Eq, Debug)]
+///     pub enum EnemyKind: EnemyProperties {
+///         Skeleton {
+///             base_health: 15,
+///         } {
+///             current_health: i32,
+///         },
+///         Ghost {
+///             is_solid: false,
+///             is_flying: true,
+///         } {
+///             is_spooky: bool,
+///         },
+///         Bats {
+///             base_health: 1,
+///             is_flying: true,
+///         } (
+///             u128, // Bat count (but please name this field in an actual program)
+///         ),
+///         ..DEFAULT_ENEMY_PROPERTIES
+///     }
+/// }
+/// ```
+//
 #[macro_export]
 macro_rules! enum_properties {
     (
@@ -143,10 +188,10 @@ macro_rules! enum_properties {
                 match self {
                     $(
                         $Enum::$variant
-                        $({ .. $(@$is_struct_variant_marker)?})?
-                        $(($(_ $(@$tuple_variant_item_marker)?),*))?
-                            => &$EnumProperties {
-                                $($field: $value),* $(, .. $default)?
+                            $({ .. $(@$is_struct_variant_marker)?})?
+                            $(($(_ $(@$tuple_variant_item_marker)?),*))?
+                        => &$EnumProperties {
+                            $($field: $value),* $(, .. $default)?
                         }
                     ),*
                 }
@@ -157,23 +202,48 @@ macro_rules! enum_properties {
     (
         $(#[$($m:tt)*])*
         $public:vis enum $Enum:ident : $EnumProperties:ident {
-            $($variant:ident {
-                $($field:ident : $value:expr),* $(,)?
-            }),* , .. $default:expr $(,)?
+            $(
+                $variant:ident {
+                    $($field:ident : $value:expr),* $(,)?
+                }
+                $(
+                    $(@$is_struct_variant_marker:tt)?
+                    {
+                        $($struct_variant_content:tt)*
+                    }
+                )?
+                $((
+                    $(
+                        $(@$tuple_variant_item_marker:tt)?
+                        $tuple_variant_item:ty
+                    ),* $(,)?
+                ))?
+                $(= $discriminant:expr)?
+            ),* , .. $default:expr $(,)?
         }
     ) => {
         $(#[$($m)*])*
         $public enum $Enum {
-            $($variant),*
+            $(
+                $variant
+                $({$($struct_variant_content)*})?
+                $(($($tuple_variant_item),*))?
+                $(= $discriminant)?
+            ),*
         }
 
         impl core::ops::Deref for $Enum {
             type Target = $EnumProperties;
             fn deref(&self) -> &Self::Target {
                 match self {
-                    $($Enum::$variant => &$EnumProperties {
-                        $($field: $value),* , .. $default
-                    }),*
+                    $(
+                        $Enum::$variant
+                            $({ .. $(@$is_struct_variant_marker)?})?
+                            $(($(_ $(@$tuple_variant_item_marker)?),*))?
+                        => &$EnumProperties {
+                            $($field: $value),* , .. $default
+                        }
+                    ),*
                 }
             }
         }
