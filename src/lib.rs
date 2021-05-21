@@ -150,11 +150,12 @@
 #[macro_export]
 macro_rules! enum_properties {
     (
-        $(#[$($m:tt)*])*
+        $(#[$($enum_attribute_token:tt)*])*
         $public:vis enum $Enum:ident : $EnumProperties:ident {
             $(
+                $(#[$($variant_attribute_token:tt)*])*
                 $variant:ident {
-                    $($field:ident : $value:expr),* $(, .. $default:expr)? $(,)?
+                    $($field:ident : $value:expr),* $(, $(.. $default:expr)?)?
                 }
                 $(
                     $(@$is_struct_variant_marker:tt)?
@@ -164,6 +165,7 @@ macro_rules! enum_properties {
                 )?
                 $((
                     $(
+                        $(#[$($tuple_attribute_token:tt)*])*
                         $(@$tuple_variant_item_marker:tt)?
                         $tuple_variant_item:ty
                     ),* $(,)?
@@ -172,12 +174,18 @@ macro_rules! enum_properties {
             ),* $(,)?
         }
     ) => {
-        $(#[$($m)*])*
+        $(#[$($enum_attribute_token)*])*
         $public enum $Enum {
             $(
+                $(#[$($variant_attribute_token)*])*
                 $variant
                 $({$($struct_variant_content)*})?
-                $(($($tuple_variant_item),*))?
+                $((
+                    $(
+                        $(#[$($tuple_attribute_token)*])*
+                        $tuple_variant_item
+                    ),*
+                ))?
                 $(= $discriminant)?
             ),*
         }
@@ -191,7 +199,7 @@ macro_rules! enum_properties {
                             $({ .. $(@$is_struct_variant_marker)?})?
                             $(($(_ $(@$tuple_variant_item_marker)?),*))?
                         => &$EnumProperties {
-                            $($field: $value),* $(, .. $default)?
+                            $($field: $value),* $(, $(.. $default)?)?
                         }
                     ),*
                 }
@@ -200,9 +208,10 @@ macro_rules! enum_properties {
     };
     
     (
-        $(#[$($m:tt)*])*
+        $(#[$($enum_attribute_token:tt)*])*
         $public:vis enum $Enum:ident : $EnumProperties:ident {
             $(
+                $(#[$($variant_attribute_token:tt)*])*
                 $variant:ident {
                     $($field:ident : $value:expr),* $(,)?
                 }
@@ -215,19 +224,26 @@ macro_rules! enum_properties {
                 $((
                     $(
                         $(@$tuple_variant_item_marker:tt)?
+                        $(#[$($tuple_attribute_token:tt)*])*
                         $tuple_variant_item:ty
                     ),* $(,)?
                 ))?
                 $(= $discriminant:expr)?
-            ),* , .. $default:expr $(,)?
+            ),* , .. $default:expr
         }
     ) => {
-        $(#[$($m)*])*
+        $(#[$($enum_attribute_token)*])*
         $public enum $Enum {
             $(
+                $(#[$($variant_attribute_token)*])*
                 $variant
                 $({$($struct_variant_content)*})?
-                $(($($tuple_variant_item),*))?
+                $((
+                    $(
+                        $(#[$($tuple_attribute_token)*])*
+                        $tuple_variant_item
+                    ),*
+                ))?
                 $(= $discriminant)?
             ),*
         }
