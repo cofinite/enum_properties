@@ -4,23 +4,23 @@
 //! A macro with two main purposes:
 //! - attaching static properties to `enum` variants
 //! - reducing the size of pointers to static records
-//! 
+//!
 //! The advantage in both cases is that the `enum` itself contains no data, and
 //! can be as small as a byte.
-//! 
+//!
 //! # Example
 //!
 //! (More complex enums are also supported. See [`enum_properties`#examples] for details.)
 //!
 //! ```rust
 //! use enum_properties::enum_properties;
-//! 
+//!
 //! struct SolidProperties {
 //!     verts: i32,
 //!     edges: i32,
 //!     faces: i32,
 //! }
-//! 
+//!
 //! enum_properties! {
 //!     #[derive(Clone, Copy, Debug)]
 //!     enum PlatonicSolid: SolidProperties {
@@ -51,16 +51,14 @@
 //!         },
 //!     }
 //! }
-//! 
-//! fn main() {
+//!
 //!     let cube = PlatonicSolid::Cube;
 //!     assert_eq!(cube.verts - cube.edges + cube.faces, 2);
-//! }
 //! ```
-//! 
+//!
 
 /// Defines a new `enum` and implements [`Deref`] for it.
-/// 
+///
 /// The `enum` will [`Deref`] to a variant-specific [`static` item].
 ///
 /// To specify default properties, use the following syntax (inspired by
@@ -70,19 +68,19 @@
 ///
 /// ```rust
 /// use enum_properties::enum_properties;
-/// 
+///
 /// pub struct EnemyProperties {
 ///     pub health:     i32,
 ///     pub is_solid:   bool,
 ///     pub is_flying:  bool,
 /// }
-/// 
+///
 /// const DEFAULT_ENEMY_PROPERTIES: EnemyProperties = EnemyProperties {
 ///     health:     10,
 ///     is_solid:   true,
 ///     is_flying:  false,
 /// };
-/// 
+///
 /// enum_properties! {
 ///     #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 ///     pub enum EnemyKind: EnemyProperties {
@@ -181,7 +179,7 @@ macro_rules! enum_properties {
                 $(= $discriminant)?
             ),*
         }
-        
+
         impl core::ops::Deref for $Enum {
             type Target = $EnumProperties;
             fn deref(&self) -> &Self::Target {
@@ -198,7 +196,7 @@ macro_rules! enum_properties {
             }
         }
     };
-    
+
     (
         $(#[$($m:tt)*])*
         $public:vis enum $Enum:ident : $EnumProperties:ident {
@@ -231,7 +229,7 @@ macro_rules! enum_properties {
                 $(= $discriminant)?
             ),*
         }
-        
+
         impl core::ops::Deref for $Enum {
             type Target = $EnumProperties;
             fn deref(&self) -> &Self::Target {
@@ -249,4 +247,3 @@ macro_rules! enum_properties {
         }
     };
 }
-
