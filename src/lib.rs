@@ -5,12 +5,13 @@
 //! - attaching static properties to `enum` variants
 //! - reducing the size of pointers to static records
 //! 
-//! The advantage in both cases is that the `enum` itself contains no data, and
-//! can be as small as a byte.
-//! 
+//! The advantage in both cases is that the `enum` itself contains none of the 
+//! static data, and can be as small as a byte.
+//!
 //! # Example
 //!
-//! (More complex enums are also supported. See [`enum_properties`#examples] for details.)
+//! (More complex enums are also supported. See [`enum_properties`#examples] 
+//! for details.)
 //!
 //! ```rust
 //! use enum_properties::enum_properties;
@@ -63,10 +64,10 @@
 /// 
 /// The `enum` will [`Deref`] to a variant-specific [`static` item].
 ///
+/// # Examples
+///
 /// To specify default properties, use the following syntax (inspired by
 /// [functional update syntax]):
-///
-/// # Examples
 ///
 /// ```rust
 /// use enum_properties::enum_properties;
@@ -101,25 +102,23 @@
 ///     }
 /// }
 /// ```
-/// [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
-/// [`static` item]: https://doc.rust-lang.org/reference/items/static-items.html
-/// [functional update syntax]: https://doc.rust-lang.org/reference/expressions/struct-expr.html#functional-update-syntax
 ///
-/// Non-unit variants and custom discriminants are supported too, by inserting the static initializer directly after the variant name:
+/// Non-unit variants and custom discriminants are supported too, by inserting 
+/// the static initializer directly after the variant name:
 ///
 /// ```rust
 /// use enum_properties::enum_properties;
 ///
 /// pub struct EnemyProperties {
-///     pub base_health:     i32,
-///     pub is_solid:   bool,
-///     pub is_flying:  bool,
+///     pub base_health:    i32,
+///     pub is_solid:       bool,
+///     pub is_flying:      bool,
 /// }
 ///
 /// const DEFAULT_ENEMY_PROPERTIES: EnemyProperties = EnemyProperties {
-///     base_health:     10,
-///     is_solid:   true,
-///     is_flying:  false,
+///     base_health:    10,
+///     is_solid:       true,
+///     is_flying:      false,
 /// };
 ///
 /// enum_properties! {
@@ -140,13 +139,18 @@
 ///             base_health: 1,
 ///             is_flying: true,
 ///         } (
-///             u128, // Bat count (but please name this field in an actual program)
+///             // Bat count (but please name this field in an actual program)
+///             u128,
 ///         ),
 ///         ..DEFAULT_ENEMY_PROPERTIES
 ///     }
 /// }
 /// ```
-//
+///
+/// [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
+/// [`static` item]: https://doc.rust-lang.org/reference/items/static-items.html
+/// [functional update syntax]: https://doc.rust-lang.org/reference/expressions/struct-expr.html#functional-update-syntax
+///
 #[macro_export]
 macro_rules! enum_properties {
     (
