@@ -35,5 +35,3 @@ fn main() {
         Fruit::Apple.weight
     );
 }
-
-
