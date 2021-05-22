@@ -36,17 +36,21 @@ fn main() {
     ];
     
     for &fruit in &fruits {
-        print!("{}s weigh about {} kg, ", fruit.name, fruit.weight);
+        println!("Name: {}", fruit.name);
+        println!("Weight: {} kg", fruit.weight);
+        print!("Description: {}", fruit.description);
+        
         match fruit {
             Fruit::Apple(worm_count) => {
-                println!("this one has {} worms.", worm_count);
+                println!(" This one has {} worms.", worm_count);
             }
             Fruit::Orange(segment_count) => {
-                println!("this one is made of {} segments.", segment_count);
+                println!(" This one is made of {} segments.", segment_count);
             }
             Fruit::Banana(length) => {
-                println!("this one is {} cm long.", length);
+                println!(" This one is {} cm long.", length);
             }
         }
+        println!("");
     }
 }
