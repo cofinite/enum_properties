@@ -1,9 +1,10 @@
+
 use enum_properties::enum_properties;
 
 pub struct FruitProperties {
-    pub name: &'static str,
-    pub description: &'static str,
-    pub weight: f32,
+    pub name:           &'static str,
+    pub description:    &'static str,
+    pub weight:         f32,
 }
 
 enum_properties! {
