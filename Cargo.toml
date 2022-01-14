@@ -13,3 +13,19 @@ categories = ["no-std", "rust-patterns"]
 [badges]
 maintenance = { status = "actively-developed" }
 
+[dependencies.lazy_static]
+version = "1.4"
+optional = true
+
+
+[[example]]
+name = "basic_usage_lazy"
+required-features = ["lazy_static"]
+
+[[example]]
+name = "with_all_features_lazy"
+required-features = ["lazy_static"]
+
+[[example]]
+name = "non_const_lazy"
+required-features = ["lazy_static"]

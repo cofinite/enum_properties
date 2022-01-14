@@ -60,6 +60,13 @@
 //! ```
 //! 
 
+
+// Lazy static reexport so we can use it from our macro
+#[cfg(feature = "lazy_static")]
+#[doc(hidden)]
+pub use lazy_static;
+
+
 /// Defines a new `enum` and implements [`Deref`] for it.
 /// 
 /// The `enum` will [`Deref`] to a variant-specific [`static` item].
@@ -270,3 +277,195 @@ macro_rules! enum_properties {
     };
 }
 
+
+
+/// Defines a new `enum` and implements [`Deref`] for it.
+///
+/// The `enum` will [`Deref`] to a variant-specific [`lazy_static` item].
+/// Unlike [`enum_properties`], this macro allows properties that require
+/// runtime initialization instead of being const-init.
+/// Thus [`enum_properties_lazy`] allows using `Vec` and `String` and much more.
+///
+/// **Notice** that this macro requires the **`lazy_static`** crate feature.
+///
+/// # Examples
+///
+/// ```rust
+/// use enum_properties::enum_properties_lazy;
+///
+/// struct Shape {
+///     name:  String,
+///     verts: Vec<[i32;2]>,
+/// }
+///
+/// enum_properties_lazy! {
+///     #[derive(Clone, Copy, Debug)]
+///     enum SimpleShape: Shape {
+///         Point {
+///             name: "Point".to_string(),
+///             verts: Vec::new(),
+///         },
+///         Line {
+///             name: {
+///                 // Works with arbitrary initialization code
+///                 let mut builder = String::new();
+///                 builder.push_str("line");
+///                 builder
+///             },
+///             verts: {
+///                 let mut vec = Vec::new();
+///                 vec.push([0,0]);
+///                 vec.push([1,1]);
+///                 vec
+///             },
+///         },
+///         Square {
+///             name: "square".to_string(),
+///             verts: vec![[0,0], [0,1], [1,0], [1,1]],
+///         },
+///     }
+/// }
+///
+/// fn main() {
+///     let line = SimpleShape::Line;
+///     assert_eq!(&line.verts, &[[0,0], [1,1]]);
+/// }
+/// ```
+///
+/// [`Deref`]: https://doc.rust-lang.org/std/ops/trait.Deref.html
+/// [`lazy_static` item]: https://crates.io/crates/lazy_static
+#[cfg(feature = "lazy_static")]
+#[macro_export]
+macro_rules! enum_properties_lazy {
+    (
+        $(#[$($enum_attribute_token:tt)*])*
+        $public:vis enum $Enum:ident : $EnumProperties:ident {
+            $(
+                $(#[$($variant_attribute_token:tt)*])*
+                $variant:ident {
+                    $($field:ident : $value:expr),* $(, $(.. $default:expr)?)?
+                }
+                $(
+                    $(@$is_struct_variant_marker:tt)?
+                    {
+                        $($struct_variant_content:tt)*
+                    }
+                )?
+                $((
+                    $(
+                        $(#[$($tuple_attribute_token:tt)*])*
+                        $(@$tuple_variant_item_marker:tt)?
+                        $tuple_variant_item:ty
+                    ),* $(,)?
+                ))?
+                $(= $discriminant:expr)?
+            ),* $(,)?
+        }
+    ) => {
+        $(#[$($enum_attribute_token)*])*
+        $public enum $Enum {
+            $(
+                $(#[$($variant_attribute_token)*])*
+                $variant
+                $({$($struct_variant_content)*})?
+                $((
+                    $(
+                        $(#[$($tuple_attribute_token)*])*
+                        $tuple_variant_item
+                    ),*
+                ))?
+                $(= $discriminant)?
+            ),*
+        }
+
+        impl core::ops::Deref for $Enum {
+            type Target = $EnumProperties;
+            fn deref(&self) -> &Self::Target {
+                match self {
+                    $(
+                        $Enum::$variant
+                            $({ .. $(@$is_struct_variant_marker)?})?
+                            $(($(_ $(@$tuple_variant_item_marker)?),*))?
+                        => {
+                            $crate::lazy_static::lazy_static!{
+                                static ref FOO: $EnumProperties = {
+                                    $EnumProperties {
+                                        $($field: $value),* $(, $(.. $default)?)?
+                                    }
+                                };
+                            }
+
+                            &*FOO
+                        }
+                    ),*
+                }
+            }
+        }
+    };
+
+    (
+        $(#[$($enum_attribute_token:tt)*])*
+        $public:vis enum $Enum:ident : $EnumProperties:ident {
+            $(
+                $(#[$($variant_attribute_token:tt)*])*
+                $variant:ident {
+                    $($field:ident : $value:expr),* $(,)?
+                }
+                $(
+                    $(@$is_struct_variant_marker:tt)?
+                    {
+                        $($struct_variant_content:tt)*
+                    }
+                )?
+                $((
+                    $(
+                        $(@$tuple_variant_item_marker:tt)?
+                        $(#[$($tuple_attribute_token:tt)*])*
+                        $tuple_variant_item:ty
+                    ),* $(,)?
+                ))?
+                $(= $discriminant:expr)?
+            ),* , .. $default:expr
+        }
+    ) => {
+        $(#[$($enum_attribute_token)*])*
+        $public enum $Enum {
+            $(
+                $(#[$($variant_attribute_token)*])*
+                $variant
+                $({$($struct_variant_content)*})?
+                $((
+                    $(
+                        $(#[$($tuple_attribute_token)*])*
+                        $tuple_variant_item
+                    ),*
+                ))?
+                $(= $discriminant)?
+            ),*
+        }
+
+        impl core::ops::Deref for $Enum {
+            type Target = $EnumProperties;
+            fn deref(&self) -> &Self::Target {
+                match self {
+                    $(
+                        $Enum::$variant
+                            $({ .. $(@$is_struct_variant_marker)?})?
+                            $(($(_ $(@$tuple_variant_item_marker)?),*))?
+                        => {
+                            $crate::lazy_static::lazy_static!{
+                                static ref FOO: $EnumProperties = {
+                                    $EnumProperties {
+                                        $($field: $value),* , .. $default
+                                    }
+                                };
+                            }
+
+                            &*FOO
+                        }
+                    ),*
+                }
+            }
+        }
+    };
+}
